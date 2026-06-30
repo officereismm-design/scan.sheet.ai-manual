@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan&amp;Sheet AI ― 操作マニュアル | OFFICE REIS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:       #1B2A5E;
+      --navy-dark:  #0F1A3E;
+      --navy-light: #E8EBF4;
+      --navy-soft:  #F2F4FA;
+      --gold:       #C9A84C;
+      --gold-dark:  #A8872E;
+      --gold-light: #F0E5C4;
+      --gold-soft:  #FAF6EE;
+      --text:       #1f2937;
+      --text-muted: #6b7280;
+      --white:      #ffffff;
+      --radius:     12px;
+      --shadow:     0 4px 24px rgba(27,42,94,.09);
+      --shadow-lg:  0 8px 48px rgba(27,42,94,.16);
+      --green:      #1a5c1a;
+      --green-bg:   #d4edda;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--text);
+      line-height: 1.8;
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(201,168,76,.07) 0%, transparent 40%),
+        radial-gradient(ellipse at 85% 90%, rgba(201,168,76,.05) 0%, transparent 40%),
+        linear-gradient(160deg, #0d1b3e 0%, #1B2A5E 45%, #152245 100%);
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ══ パスワード画面 ══════════════════════════════ */
+    #pw-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, #2a4080 100%);
+      padding: 24px;
+      position: relative; overflow: hidden;
+    }
+    #pw-screen::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(201,168,76,.12) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    #pw-screen::after {
+      content: '';
+      position: absolute;
+      top: -40%; right: -20%;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%);
+    }
+    .pw-card {
+      position: relative; z-index: 1;
+      background: rgba(255,255,255,.97);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,.2);
+      padding: 52px 44px;
+      width: 100%; max-width: 440px;
+      text-align: center;
+    }
+    .pw-card img { height: 64px; width: auto; margin-bottom: 20px; }
+    .pw-card h1 { font-size: 1.3rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; letter-spacing: .02em; }
+    .pw-card .pw-subtitle { font-size: .82rem; color: var(--text-muted); margin-bottom: 28px; font-weight: 300; }
+    .pw-gold-line {
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      height: 1px; margin-bottom: 32px;
+    }
+    .pw-label { display: block; text-align: left; font-size: .78rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; letter-spacing: .05em; text-transform: uppercase; }
+    .pw-input {
+      width: 100%; padding: 13px 16px;
+      border: 1.5px solid var(--navy-light);
+      border-radius: 10px;
+      font-size: .95rem; font-family: inherit;
+      outline: none; transition: border-color .2s, box-shadow .2s;
+      margin-bottom: 8px; background: var(--navy-soft);
+    }
+    .pw-input:focus { border-color: var(--navy); background: #fff; box-shadow: 0 0 0 3px rgba(27,42,94,.08); }
+    .pw-error { font-size: .8rem; color: #dc2626; min-height: 20px; margin-bottom: 14px; text-align: left; }
+    .pw-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+      color: var(--white); border: none; border-radius: 10px;
+      font-size: .95rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 16px rgba(27,42,94,.3);
+      letter-spacing: .03em;
+    }
+    .pw-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(27,42,94,.4); }
+    .pw-btn:active { transform: translateY(0); }
+    .pw-footer { margin-top: 24px; font-size: .75rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* ══ セットアップ画面 ════════════════════════════ */
+    #setup-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #eef0f8; padding: 24px; }
+    .setup-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); padding: 40px; width: 100%; max-width: 520px; }
+    .setup-card h2 { font-size: 1.1rem; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+    .setup-card p  { font-size: .85rem; color: var(--text-muted); margin-bottom: 24px; }
+    .setup-hash { background: var(--navy-soft); border: 1px solid var(--navy-light); border-radius: 8px; padding: 12px 16px; font-size: .8rem; word-break: break-all; color: var(--navy); margin-top: 16px; min-height: 48px; font-family: monospace; }
+    .setup-copy-btn { margin-top: 12px; padding: 8px 20px; background: var(--gold); color: var(--white); border: none; border-radius: 8px; font-size: .85rem; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity .2s; }
+    .setup-copy-btn:hover { opacity: .85; }
+
+    /* ══ マニュアル本体 ══════════════════════════════ */
+    #manual { display: block; }
+
+    .m-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,18,45,.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+      box-shadow: 0 1px 0 rgba(201,168,76,.4), 0 4px 20px rgba(0,0,0,.3);
+      border-bottom: 1px solid rgba(201,168,76,.35);
+    }
+    .m-header img { height: 42px; width: auto; }
+    .m-header-title { color: var(--gold-light); font-size: .82rem; font-weight: 400; letter-spacing: .08em; }
+
+    .m-layout { position: relative; z-index: 1; display: flex; max-width: 1200px; margin: 0 auto; padding: 36px 20px; gap: 28px; }
+
+    /* ── サイドナビ ────────────────────────────────── */
+    .m-nav { width: 240px; flex-shrink: 0; }
+    .m-nav-inner {
+      position: sticky; top: 88px;
+      background: var(--white);
+      border-radius: var(--radius);
+      border: none;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.1);
+    }
+    .m-nav-head {
+      background: linear-gradient(135deg, var(--navy) 0%, #243872 100%);
+      color: var(--gold-light);
+      padding: 14px 18px;
+      font-size: .75rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+      border-bottom: 2px solid var(--gold);
+    }
+    .m-nav ul { list-style: none; padding: 10px 0; }
+    .m-nav li a {
+      display: block; padding: 7px 18px;
+      font-size: .8rem; color: var(--text-muted);
+      text-decoration: none;
+      transition: color .15s, background .15s, border-color .15s;
+      border-left: 2px solid transparent;
+    }
+    .m-nav li a:hover { color: var(--navy); background: var(--navy-soft); border-left-color: var(--gold); }
+    .m-nav li.section-head a { font-weight: 700; color: var(--navy); font-size: .82rem; }
+    .m-nav li.sub a { padding-left: 30px; font-size: .77rem; }
+    .m-nav-divider { height: 1px; background: var(--navy-light); margin: 6px 18px; }
+
+    /* ── メインコンテンツ ──────────────────────────── */
+    .m-content { flex: 1; min-width: 0; }
+
+    .m-section {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 40px rgba(0,0,0,.22), 0 2px 8px rgba(0,0,0,.1);
+      padding: 40px 48px;
+      margin-bottom: 24px;
+      border-top: 3px solid var(--gold);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .m-section:hover { transform: translateY(-1px); box-shadow: 0 12px 48px rgba(0,0,0,.28), 0 4px 12px rgba(0,0,0,.12); }
+
+    .m-section h2 {
+      font-size: 1.25rem; font-weight: 700; color: var(--navy);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--navy-light);
+    }
+    .m-section h2 .sec-num {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: var(--white);
+      border-radius: 50%;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem; font-weight: 700; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(201,168,76,.4);
+    }
+    .m-section h3 {
+      font-size: .95rem; font-weight: 700; color: var(--navy);
+      margin: 32px 0 14px;
+      padding: 8px 14px;
+      background: linear-gradient(90deg, var(--navy-soft) 0%, transparent 100%);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+    }
+    .m-section p  { font-size: .9rem; margin-bottom: 12px; line-height: 1.95; color: #374151; }
+    .m-section ul, .m-section ol { padding-left: 1.5em; margin-bottom: 14px; }
+    .m-section li { font-size: .9rem; margin-bottom: 7px; line-height: 1.85; }
+
+    /* ── バッジ ────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      font-size: .72rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 4px;
+      vertical-align: middle; margin-right: 4px;
+      letter-spacing: .03em;
+    }
+    .badge-admin { background: #1a3a5c; color: #fff; }
+    .badge-client { background: #1a5c1a; color: #fff; }
+    .badge-reis { background: #7c4d00; color: #fff; }
+    .badge-user { background: #5c1a4a; color: #fff; }
+
+    /* ── ステップボックス ──────────────────────────── */
+    .step-box {
+      background: linear-gradient(135deg, var(--navy-soft) 0%, #eef0f8 100%);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin: 18px 0;
+      border: 1px solid var(--navy-light);
+    }
+    .step-box ol { list-style: none; padding: 0; counter-reset: step; }
+    .step-box li {
+      font-size: .9rem; margin-bottom: 14px; line-height: 1.85;
+      display: flex; align-items: flex-start; gap: 12px;
+      counter-increment: step;
+    }
+    .step-box li:last-child { margin-bottom: 0; }
+    .step-box li::before {
+      content: counter(step);
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 50%;
+      min-width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-box li strong { color: var(--navy); }
+    .step-box li ul { list-style: disc; padding-left: 1.4em; margin-top: 8px; }
+    .step-box li ul li { display: list-item; margin-bottom: 6px; }
+    .step-box li ul li::before { display: none; }
+
+    /* ── ノート・警告ボックス ──────────────────────── */
+    .note-box {
+      background: var(--gold-soft);
+      border: 1px solid var(--gold-light);
+      border-left: 4px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: .86rem;
+      line-height: 1.85;
+    }
+    .note-box strong { color: var(--navy); }
+
+    .warn-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: .86rem;
+      line-height: 1.85;
+    }
+    .warn-box strong { color: #92400e; }
+
+    .ok-box {
+      background: #f0faf0;
+      border: 1px solid #b7e0b7;
+      border-left: 4px solid #34a853;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: .86rem;
+      line-height: 1.85;
+    }
+    .ok-box strong { color: #1a5c1a; }
+
+    /* ── 会計ソフトグリッド ────────────────────────── */
+    .software-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin: 18px 0; }
+    .software-card {
+      background: var(--white);
+      border: 1px solid var(--navy-light);
+      border-top: 3px solid var(--navy);
+      border-radius: var(--radius);
+      padding: 18px 14px;
+      text-align: center;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .software-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(27,42,94,.12); }
+    .software-card .name { font-weight: 700; color: var(--navy); margin-bottom: 6px; font-size: .88rem; }
+    .software-card .sheet { font-size: .75rem; color: var(--text-muted); }
+
+    /* ── FAQ ───────────────────────────────────────── */
+    .faq-item { margin-bottom: 16px; border: 1px solid var(--navy-light); border-radius: var(--radius); overflow: hidden; }
+    .faq-q {
+      font-weight: 700; color: var(--navy);
+      padding: 14px 18px;
+      background: var(--navy-soft);
+      font-size: .9rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .faq-q::before { content: 'Q'; background: var(--gold); color: var(--white); border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; flex-shrink: 0; }
+    .faq-a {
+      font-size: .9rem;
+      padding: 14px 18px;
+      background: var(--white);
+      display: flex; align-items: flex-start; gap: 10px;
+      line-height: 1.9;
+    }
+    .faq-a::before { content: 'A'; background: var(--navy); color: var(--white); border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: .75rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+
+    /* ── フローボックス ────────────────────────────── */
+    .flow-box { display: flex; flex-direction: column; margin: 18px 0; }
+    .flow-step {
+      background: var(--white);
+      border: 1px solid var(--navy-light);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      font-size: .9rem;
+      display: flex; align-items: center; gap: 14px;
+      transition: border-color .15s;
+    }
+    .flow-step:hover { border-color: var(--gold); }
+    .flow-step .num {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: var(--white);
+      border-radius: 50%;
+      min-width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700; flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(201,168,76,.35);
+    }
+    .flow-arrow {
+      display: flex; align-items: center; justify-content: center;
+      padding: 2px 0;
+      color: var(--gold); font-size: 1.1rem; line-height: 1;
+    }
+
+    /* ── テーブル ──────────────────────────────────── */
+    .m-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .88rem; }
+    .m-table th {
+      background: var(--navy); color: #fff;
+      padding: 10px 14px; text-align: left;
+      font-weight: 700; font-size: .82rem;
+    }
+    .m-table td {
+      padding: 9px 14px; border-bottom: 1px solid var(--navy-light);
+      vertical-align: top; line-height: 1.7;
+    }
+    .m-table tr:last-child td { border-bottom: none; }
+    .m-table tr:nth-child(even) td { background: var(--navy-soft); }
+
+    /* ── フッター ──────────────────────────────────── */
+    .m-footer {
+      position: relative; z-index: 1;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(8px);
+      color: rgba(201,168,76,.8);
+      text-align: center;
+      padding: 28px;
+      font-size: .78rem;
+      margin-top: 8px;
+      border-top: 1px solid rgba(201,168,76,.3);
+      letter-spacing: .06em;
+    }
+
+    /* ── ハイライトボックス（セル参照用）────────────── */
+    .cell-ref {
+      display: inline-block;
+      background: #fff3cd;
+      border: 1px solid #c9a84c;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-family: monospace;
+      font-size: .88em;
+      font-weight: 700;
+      color: #7c4d00;
+    }
+
+    @media (max-width: 760px) {
+      .m-layout { flex-direction: column; padding: 16px; }
+      .m-nav { width: 100%; }
+      .m-nav-inner { position: static; }
+      .m-section { padding: 28px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- パスワード画面は廃止 -->
+
+<!-- ════════════════════════════════════════════════════
+     セットアップ画面（?setup=true でアクセス）
+════════════════════════════════════════════════════ -->
+<div id="setup-screen" style="display:none">
+  <div class="setup-card">
+    <h2>パスワードハッシュ生成ツール</h2>
+    <p>設定したいパスワードを入力してください。生成されたハッシュ値を index.html の <code>PASSWORD_HASH</code> に貼り付けてください。</p>
+    <label class="pw-label" for="setup-input">新しいパスワード</label>
+    <input id="setup-input" class="pw-input" type="text" placeholder="例: ScanSheet2026" />
+    <button class="pw-btn" id="setup-gen-btn" style="margin-top:12px">ハッシュを生成</button>
+    <div class="setup-hash" id="setup-result">（生成されたハッシュがここに表示されます）</div>
+    <button class="setup-copy-btn" id="setup-copy-btn">コピー</button>
+    <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--navy-light); font-size:.8rem; color:var(--text-muted);">
+      <strong style="color:var(--navy)">貼り付け先：</strong><br>
+      index.html の JavaScript 内<br>
+      <code style="background:var(--navy-soft);padding:2px 6px;border-radius:4px;">const PASSWORD_HASH = '【ここを置き換え】';</code>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     マニュアル本体
+════════════════════════════════════════════════════ -->
+<div id="manual">
+
+  <!-- ヘッダー -->
+  <header class="m-header">
+    <img src="images/logo.png" alt="OFFICE REIS" onerror="this.style.display='none'" />
+    <span class="m-header-title">Scan&amp;Sheet AI ― 操作マニュアル</span>
+    <span></span>
+  </header>
+
+  <div class="m-layout">
+
+    <!-- サイドナビ -->
+    <nav class="m-nav">
+      <div class="m-nav-inner">
+        <div class="m-nav-head">目次</div>
+        <ul>
+          <li class="section-head"><a href="#sec1">1. 製品概要</a></li>
+          <li class="m-nav-divider"></li>
+          <li class="section-head"><a href="#sec2">2. システム構成</a></li>
+          <li class="sub"><a href="#sec2-admin">顧問先管理シート</a></li>
+          <li class="sub"><a href="#sec2-client">顧問先シート</a></li>
+          <li class="m-nav-divider"></li>
+          <li class="section-head"><a href="#sec3">3. 初回セットアップ</a></li>
+          <li class="sub"><a href="#sec3-admin">顧問先管理シートの設定</a></li>
+          <li class="sub"><a href="#sec3-client">顧問先の登録</a></li>
+          <li class="sub"><a href="#sec3-init">顧問先シートの初期設定</a></li>
+          <li class="sub"><a href="#sec3-tkc">TKC/JDL/ミロクの追加設定</a></li>
+          <li class="m-nav-divider"></li>
+          <li class="section-head"><a href="#sec4">4. 日常業務の流れ</a></li>
+          <li class="sub"><a href="#sec4-scan">領収書のスキャン・投入</a></li>
+          <li class="sub"><a href="#sec4-ai">① AI処理</a></li>
+          <li class="sub"><a href="#sec4-check">② 重複チェック・並べ替え</a></li>
+          <li class="sub"><a href="#sec4-confirm">③ 確定して転記</a></li>
+          <li class="m-nav-divider"></li>
+          <li class="section-head"><a href="#sec5">5. 会計ソフトへの出力</a></li>
+          <li class="m-nav-divider"></li>
+          <li class="section-head"><a href="#sec6">6. 対応会計ソフト</a></li>
+          <li class="m-nav-divider"></li>
+          <li class="section-head"><a href="#sec7">7. よくある質問</a></li>
+          <li class="m-nav-divider"></li>
+          <li class="section-head"><a href="#sec8">8. お問い合わせ</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- メインコンテンツ -->
+    <main class="m-content">
+
+      <!-- ─── 1. 製品概要 ─── -->
+      <section class="m-section" id="sec1">
+        <h2><span class="sec-num">1</span>製品概要</h2>
+        <p>
+          <strong>Scan&amp;Sheet AI</strong> は、Google スプレッドシートと Gemini AI を組み合わせた領収書・レシートの自動記帳ツールです。
+          スマートフォンやスキャナで撮影した画像をGoogleドライブに入れるだけで、AIが自動的に内容を読み取り、各会計ソフト向けの仕訳データに変換します。
+        </p>
+
+        <h3>主な機能</h3>
+        <ul>
+          <li>AIによるレシート・領収書の自動読み取り（日付・支払先・金額・税率・T番号）</li>
+          <li>複数税率（10%・8%軽減）の自動分離記録</li>
+          <li>インボイス登録番号（T番号）の自動抽出と国税庁データベースとのリアルタイム照合</li>
+          <li>freee / マネーフォワード / 弥生 / TKC FX4クラウド / JDL IBEX / ミロク への出力対応</li>
+          <li>顧問先ごとに独立したスプレッドシートで完全分離管理</li>
+          <li>電子帳簿保存法対応（原本リンク・登録日時の自動記録）</li>
+          <li>重複データの自動検出（日付＋支払先＋金額で判定）</li>
+          <li>大量処理対応（時間制限を超えた場合は自動で続きから再開）</li>
+        </ul>
+
+        <h3>このマニュアルの読み方</h3>
+        <p>本マニュアルでは、作業の場所を以下のバッジで区別しています。</p>
+        <table class="m-table">
+          <tr><th>バッジ</th><th>意味</th></tr>
+          <tr><td><span class="badge badge-user">スタッフ</span></td><td>事務所スタッフが日常的に行う操作です</td></tr>
+          <tr><td><span class="badge badge-admin">顧問先管理シート</span></td><td>管理用スプレッドシートで行う操作です</td></tr>
+          <tr><td><span class="badge badge-client">顧問先シート</span></td><td>顧問先別スプレッドシートで行う操作です</td></tr>
+        </table>
+      </section>
+
+      <!-- ─── 2. システム構成 ─── -->
+      <section class="m-section" id="sec2">
+        <h2><span class="sec-num">2</span>システム構成</h2>
+        <p>Scan&amp;Sheet AI は <strong>2種類のスプレッドシート</strong> を使って管理します。</p>
+
+        <h3 id="sec2-admin">管理用スプレッドシート（顧問先管理シート）<span class="badge badge-admin" style="margin-left:8px">顧問先管理シート</span></h3>
+        <p>事務所全体を一括管理するスプレッドシートです。初回セットアップ後は、顧問先を追加するときだけ操作します。</p>
+        <ul>
+          <li>顧問先の一覧管理</li>
+          <li>顧問先別フォルダ・スプレッドシートの自動生成</li>
+          <li>Gemini APIキー・国税庁API IDの管理</li>
+        </ul>
+        <p><strong>設定シートのセル構成：</strong></p>
+        <table class="m-table">
+          <tr><th>セル</th><th>項目</th><th>内容</th></tr>
+          <tr><td><span class="cell-ref">B1</span></td><td>種別</td><td>「ADMIN」固定（自動設定）</td></tr>
+          <tr><td><span class="cell-ref">B2</span></td><td>Gemini APIキー</td><td>AIの読み取りに使用するAPIキー</td></tr>
+          <tr><td><span class="cell-ref">B3</span></td><td>国税庁 API ID</td><td>インボイスT番号照合用のID（無料）</td></tr>
+        </table>
+
+        <h3 id="sec2-client">顧問先別スプレッドシート（顧問先シート）<span class="badge badge-client" style="margin-left:8px">顧問先シート</span></h3>
+        <p>顧問先ごとに自動生成されるスプレッドシートです。日常業務はここで行います。</p>
+        <ul>
+          <li><strong>作業シート</strong>：AI処理・重複チェック・確定の3ステップ操作パネル</li>
+          <li><strong>全体シート</strong>：確定済みの全レシートデータを蓄積</li>
+          <li><strong>転記シート</strong>：確定のたびに自動作成（例：「2026.6.22 freee」）</li>
+          <li><strong>科目コードマスタ</strong>：TKC / JDL / ミロク 使用時のみ表示</li>
+        </ul>
+        <p><strong>設定シートのセル構成：</strong></p>
+        <table class="m-table">
+          <tr><th>セル</th><th>項目</th><th>内容</th></tr>
+          <tr><td><span class="cell-ref">B1</span></td><td>種別</td><td>「CLIENT」固定（自動設定）</td></tr>
+          <tr><td><span class="cell-ref">B2</span></td><td>顧問先名</td><td>顧問先の名前（自動設定）</td></tr>
+          <tr><td><span class="cell-ref">B3</span></td><td>未処理フォルダID</td><td>自動設定（変更不可）</td></tr>
+          <tr><td><span class="cell-ref">B4</span></td><td>処理済みフォルダID</td><td>自動設定（変更不可）</td></tr>
+          <tr><td><span class="cell-ref">B5</span></td><td>Gemini APIキー</td><td>セットアップ時に設定</td></tr>
+          <tr><td><span class="cell-ref">B6</span></td><td>国税庁 API ID</td><td>セットアップ時に設定</td></tr>
+          <tr><td><span class="cell-ref">B7</span></td><td>TKC 関与先コード</td><td>TKC使用時のみ（3〜4桁の数字）</td></tr>
+        </table>
+        <div class="warn-box" style="margin-top:12px">
+          <strong>⚠️ 顧問先シートは顧問先と共有しないでください：</strong><br>
+          顧問先シートの設定シートにはGemini APIキーが記載されています。顧問先にスプレッドシートを共有すると、APIキーが漏洩し、第三者に悪用される恐れがあります。顧問先に操作させる必要がある場合は、レシートを「未処理」フォルダに入れるだけにとどめ、シート自体は共有しないでください。
+        </div>
+
+        <h3>Googleドライブのフォルダ構成</h3>
+        <p>「Scan&amp;SheetAI」フォルダの中に顧問先管理シートと顧問先ごとのフォルダが自動作成されます。</p>
+        <div class="step-box">
+          <div style="font-family:monospace;font-size:.85rem;line-height:2.1">
+            Scan&amp;SheetAI/<br>
+            &nbsp;&nbsp;├─ 顧問先管理シート（スプレッドシート）<br>
+            &nbsp;&nbsp;├─ 山田工務店/<br>
+            &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├─ 山田工務店_SS（顧問先シート）<br>
+            &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├─ 未処理/　　← レシートをここに入れる<br>
+            &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└─ 処理済み/　← 確定後に自動移動<br>
+            &nbsp;&nbsp;├─ 鈴木農業/<br>
+            &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├─ 鈴木農業_SS（顧問先シート）<br>
+            &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├─ 未処理/<br>
+            &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└─ 処理済み/<br>
+            &nbsp;&nbsp;└─ ...
+          </div>
+        </div>
+      </section>
+
+      <!-- ─── 3. 初回セットアップ ─── -->
+      <section class="m-section" id="sec3">
+        <h2><span class="sec-num">3</span>初回セットアップ</h2>
+        <p>初回セットアップはご自身のGoogleアカウントで行っていただきます。手順に不安がある場合は <strong>丸投げプラン</strong> にてオンラインで伴走サポートを提供しています。お気軽にご相談ください。</p>
+
+        <h3 id="sec3-admin">3-1. 顧問先管理シートの初回セットアップ <span class="badge badge-admin">顧問先管理シート</span></h3>
+        <div class="step-box">
+          <ol>
+            <li><div>顧問先管理シートを開きます。上部メニューに「経費記帳（管理）」→「初回セットアップ」が表示されます。</div></li>
+            <li><div>【ステップ 1 / 3：ライセンス確認】<br>
+              現在ログイン中のGoogleアカウントが表示されます。「OK」をクリックするとライセンスを確認します。</div></li>
+            <li><div>【ステップ 2 / 3：シートの作成】<br>
+              「設定」シートと「クライアント管理」シートが自動で作成されます。</div></li>
+            <li><div>【ステップ 3 / 3：APIキーの設定】<br>
+              「設定」シートの B2 セルに Gemini APIキー、B3 セルに国税庁 API ID を貼り付けます。<br>
+              取得方法がわからない場合は → <a href="api-guide.html" style="color:var(--navy);font-weight:700;">APIキー・国税庁ID 取得ガイド</a></div></li>
+          </ol>
+        </div>
+
+        <h3 id="sec3-client">3-2. 顧問先の登録（フォルダ・スプレッドシートの自動生成）<span class="badge badge-admin">顧問先管理シート</span></h3>
+        <p>顧問先管理シートの「クライアント管理」シートで顧問先を登録すると、フォルダと顧問先シートが自動的に作成されます。</p>
+        <div class="step-box">
+          <ol>
+            <li><div>「クライアント管理」シートを開きます。</div></li>
+            <li><div>A列（7行目以降）に顧問先の名前を入力します。（例：「山田工務店」「鈴木農業」）</div></li>
+            <li><div>C列（使用会計ソフト）をドロップダウンから選択します。freee / MF / 弥生 / TKC / JDL / ミロク（省略するとfreeeになります）</div></li>
+            <li><div>E列（顧問先Gmail）に顧問先のGmailアドレスを入力すると、自動で共有設定が行われます。</div></li>
+            <li><div>A4 のチェックボックスをオンにします。入力した顧問先のフォルダと顧問先シートが自動で生成されます。</div></li>
+          </ol>
+        </div>
+
+        <div class="ok-box">
+          <strong>自動で作成されるもの：</strong><br>
+          ① 「Scan&amp;SheetAI」フォルダ内に「顧問先名」フォルダ<br>
+          ② その中に顧問先シート「顧問先名_SS」、「未処理」フォルダ、「処理済み」フォルダ<br>
+          ③ E列にGmailがあれば、そのアドレスへの共有設定（編集者権限）
+        </div>
+
+        <div class="warn-box">
+          <strong>顧問先名は後から変更しないでください。</strong><br>
+          顧問先名はフォルダ名・シートのタイトルに使用されます。登録後に変更するとフォルダ名との不一致が生じます。
+        </div>
+
+        <h3 id="sec3-init">3-3. 顧問先シートの初期設定 <span class="badge badge-client">顧問先シート</span></h3>
+        <p>新しく作られた顧問先シートを初めて開いたら、チェックボックスを動作させるための初期設定を行います。これを行わないとチェックボックスでの操作ができません。</p>
+        <div class="step-box">
+          <ol>
+            <li><div>作成された顧問先シートを開きます。</div></li>
+            <li><div>上部メニューの「経費記帳」→「初期設定（最初の1回のみ）」をクリックします。</div></li>
+            <li><div>ライセンスの確認が行われます。問題なければ「✅ 初期設定が完了しました」のダイアログが表示されます。</div></li>
+            <li><div>設定シートの B5 に Gemini APIキー、B6 に国税庁 API IDを貼り付けます。<br>
+              取得方法がわからない場合は → <a href="api-guide.html" style="color:var(--navy);font-weight:700;">APIキー・国税庁ID 取得ガイド</a></div></li>
+          </ol>
+        </div>
+
+        <div class="note-box">
+          <strong>初期設定はライセンス購入者のアカウントでのみ実行できます：</strong><br>
+          初期設定の実行時にライセンス認証が行われます。購入時に登録したGoogleアカウント以外では認証が通らないため、顧問先が誤って実行しようとしてもエラーになります。事務所のスタッフが事務所のアカウントでログインした状態で実行してください。
+        </div>
+
+        <h3 id="sec3-tkc">3-4. TKC / JDL / ミロク の追加設定 <span class="badge badge-client">顧問先シート</span></h3>
+        <p>TKC・JDL・ミロクをご利用の場合、科目コードの設定が必要です。freee・MF・弥生はこの設定は不要です。</p>
+        <div class="step-box">
+          <ol>
+            <li><div>メニューの「経費記帳」→「科目コードマスタを初期化（JDL / TKC / ミロク）」をクリックします。</div></li>
+            <li><div>「科目コードマスタ」シートが開き、サンプルデータが挿入されます。</div></li>
+            <li><div>B列（科目コード）を、ご利用の会計ソフトの実際の科目コードに書き換えてください。<br>
+              <span style="font-size:.82rem;color:var(--text-muted)">A列「勘定科目名」はAIが出力する名称と完全一致させることが重要です。</span></div></li>
+            <li><div>特に「現金」の科目コード（貸方科目として使用）を必ず設定してください。</div></li>
+          </ol>
+        </div>
+        <div class="warn-box">
+          <strong>TKC をご利用の場合の追加設定：</strong><br>
+          設定シートの <span class="cell-ref">B7</span> セルに、TKCの関与先コード（3〜4桁の数字）を入力してください。このコードは顧問先ごとに異なります。TKCの管理画面からご確認ください。
+        </div>
+      </section>
+
+      <!-- ─── 4. 日常業務の流れ ─── -->
+      <section class="m-section" id="sec4">
+        <h2><span class="sec-num">4</span>日常業務の流れ</h2>
+        <p>セットアップ完了後の日常業務は、顧問先シートの「作業シート」で3ステップで完結します。</p>
+
+        <div class="flow-box">
+          <div class="flow-step" style="background:var(--navy-soft); border-color:var(--navy);">
+            <span class="num" style="background:var(--navy)">準</span>
+            <span>領収書をスキャン・撮影して「未処理」フォルダに入れる</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" style="background:#dce8fb; border-color:#7aabf5;">
+            <span class="num">①</span>
+            <span><strong>AI処理開始</strong>のチェックボックスをオン → 自動読み取り</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" style="background:#fff3cd; border-color:#f5c842;">
+            <span class="num">②</span>
+            <span><strong>日付順並べ替え＋重複チェック</strong>のチェックボックスをオン → 内容を確認・修正</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step" style="background:var(--green-bg); border-color:#a3d9a3;">
+            <span class="num">③</span>
+            <span><strong>確定して転記</strong>のチェックボックスをオン → 全体シートへ蓄積・転記シート自動作成</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="num" style="background:var(--gold)">出</span>
+            <span>転記シートをCSVでダウンロードして会計ソフトにインポート</span>
+          </div>
+        </div>
+
+        <h3 id="sec4-scan">準備：領収書をスキャン・撮影して「未処理」フォルダに入れる <span class="badge badge-user">スタッフ</span></h3>
+        <p>スキャナやスマートフォンで領収書・レシートを撮影し、該当顧問先の <strong>「未処理」フォルダ</strong> に保存してください。</p>
+        <div class="note-box">
+          <strong>対応ファイル形式：</strong>JPEG・PNG・GIF・WebP・HEIC（iPhone撮影）・PDF
+        </div>
+        <div class="note-box">
+          <strong>ScanSnap Cloud を使うと便利です：</strong><br>
+          ScanSnap iX シリーズは、ScanSnap Cloud 経由でPCなしに直接Google Driveへ送信できます。顧問先フォルダの「未処理」フォルダをスキャン先に設定しておくと、スキャンボタン1つで自動的に投入されます。
+        </div>
+        <div class="note-box">
+          <strong>Google ドライブ for Desktop を使うと便利です：</strong><br>
+          Google Drive for Desktop をインストールするとGoogleドライブがWindowsエクスプローラー上のフォルダとして表示されます。ファイルをドラッグ＆ドロップするだけで「未処理」フォルダに投入できます。
+        </div>
+
+        <h3 id="sec4-ai">① AI処理開始 <span class="badge badge-user">スタッフ</span> <span class="badge badge-client">クライアントSS</span></h3>
+        <p>「作業シート」の上部にある3行のボタンパネルを使います。</p>
+        <div class="step-box">
+          <ol>
+            <li><div>顧問先シートの「作業シート」タブを開きます。</div></li>
+            <li>作業シート上部の「① AI処理開始」行のチェックボックスをオンにします。</li>
+            <li>処理が始まります。右のステータス欄に「処理中... (○件)」と表示されます。</li>
+            <li>完了すると「○件完了（時刻）」と緑色で表示されます。</li>
+          </ol>
+        </div>
+        <div class="warn-box">
+          <strong>処理時間の目安：</strong>1枚あたり5〜15秒かかります。チェックボックスをオンにしたらそのままお待ちください。シートを閉じても処理は継続します。<br><br>
+          <strong>大量処理（約30枚以上）の場合：</strong>Google Apps Script の実行時間制限（4分30秒）を超えた場合、「残り○件 → 約1.5分後に自動で続行します」と表示されます。そのまましばらく待つと自動的に続きから処理が再開されます。チェックボックスを再度オンにする必要はありません。
+        </div>
+        <div class="warn-box">
+          <strong>作業シートに前回のデータが残っている場合：</strong><br>
+          確定されていないデータが残っている場合、上書きするか確認ダイアログが表示されます。前回データを先に確定する場合は「いいえ」を選び、③の「確定して転記」を先に実行してください。
+        </div>
+
+        <h3 id="sec4-check">② 日付順並べ替え＋重複チェック <span class="badge badge-user">スタッフ</span></h3>
+        <p>AIが読み取った内容を確認・修正します。</p>
+        <div class="step-box">
+          <ol>
+            <li>作業シート上部の「② 日付順に並べ替え ＋ 重複チェック」行のチェックボックスをオンにします。</li>
+            <li>データが日付順（古い順）に並べ替えられます。</li>
+            <li>日付・支払先・金額が同じデータは重複の可能性があるため黄色でハイライトされます。内容を確認して不要な行は削除してください。</li>
+            <li>8行目以降のデータを直接確認・修正してください。</li>
+          </ol>
+        </div>
+        <p><strong>修正が必要な主な項目：</strong></p>
+        <ul>
+          <li><strong>勘定科目</strong>：AIが自動判定しますが、必要に応じて手修正してください。修正を繰り返すことで読み取り精度が上がります。</li>
+          <li><strong>適格区分</strong>：T番号を国税庁データベースと照合し「✅適格」「❌非適格」「？不明」を自動判定します。必要に応じてドロップダウンで変更できます。</li>
+          <li><strong>税率</strong>：10% / 8% / 0% のドロップダウンで変更できます。</li>
+          <li><strong>内容・摘要</strong>・<strong>補助科目</strong>・<strong>部門</strong>：自由に修正・追記できます。</li>
+          <li><strong>メモ列</strong>：AIの読み取り精度が低いと判断したセルが黄色になります。メモ欄に理由が記載されているので確認してください。</li>
+        </ul>
+
+        <div class="note-box">
+          <strong>原本リンク（M列）：</strong>Googleドライブの画像ファイルに直接リンクするハイパーリンクが自動設定されます。電子帳簿保存法の要件（原本の参照可能性）を満たします。
+        </div>
+
+        <h3 id="sec4-confirm">③ 確定して転記 <span class="badge badge-user">スタッフ</span></h3>
+        <div class="step-box">
+          <ol>
+            <li>作業シート上部の「③ 確定して転記」行のチェックボックスをオンにします。</li>
+            <li>以下の処理が自動で実行されます：<br>
+              ・作業シートのデータが「全体」シートに追記（蓄積）される<br>
+              ・転記シートが自動作成される（例：「2026.6.22 freee」）<br>
+              ・処理済みの画像ファイルが「処理済み」フォルダへ自動移動される<br>
+              ・作業シートがクリアされ、次回の処理に備える
+            </li>
+            <li>「✅ 完了：転記○件 / PDF移動○件（時刻）」と表示されたら完了です。</li>
+          </ol>
+        </div>
+
+        <div class="warn-box">
+          <strong>AI処理が途中で中断した状態で確定しようとした場合：</strong><br>
+          「まだ○件のファイルが処理待ちです」という確認が表示されます。残りのファイルも処理する場合は「いいえ」を選び、①チェックボックスを再度オンにして続きを処理してください。
+        </div>
+      </section>
+
+      <!-- ─── 5. 会計ソフトへの出力 ─── -->
+      <section class="m-section" id="sec5">
+        <h2><span class="sec-num">5</span>会計ソフトへの出力</h2>
+        <p>確定操作を行うと、その都度 <strong>転記シート</strong> が自動作成されます。シート名は「2026.6.22 freee」のように日付と会計ソフト名が付きます。</p>
+
+        <h3>転記シートのCSVダウンロード手順</h3>
+        <div class="step-box">
+          <ol>
+            <li>スプレッドシート下部のタブで転記シート（例：「2026.6.22 freee」）をクリックして開きます。</li>
+            <li>メニューの「ファイル」→「ダウンロード」→「カンマ区切り形式（.csv）」を選択します。</li>
+            <li>ダウンロードしたCSVを各会計ソフトにインポートします。</li>
+          </ol>
+        </div>
+
+        <div class="note-box">
+          <strong>転記シートは毎回新しく作成されます：</strong><br>
+          確定するたびに「2026.6.22 freee」「2026.6.22 freee(2)」のように日付付きで新しいシートが追加されます。古い転記シートを削除しても全体シートのデータには影響しません。
+        </div>
+
+        <h3>会計ソフト別のインポート先</h3>
+        <table class="m-table">
+          <tr><th>会計ソフト</th><th>インポート場所</th><th>注意事項</th></tr>
+          <tr>
+            <td><strong>freee</strong></td>
+            <td>取引 > ︙メニュー > 取引の一括インポート</td>
+            <td>収支区分：支出 / 税計算区分：内税 / 決済口座：現金</td>
+          </tr>
+          <tr>
+            <td><strong>マネーフォワード</strong></td>
+            <td>仕訳帳 > インポート</td>
+            <td>「？不明」のT番号は「80%控除」で出力され、仕訳メモに「インボイス要確認」が記録されます</td>
+          </tr>
+          <tr>
+            <td><strong>弥生会計</strong></td>
+            <td>ファイル > インポート > 仕訳日記帳</td>
+            <td>文字コード：Shift-JIS を指定してください</td>
+          </tr>
+          <tr>
+            <td><strong>TKC FX4クラウド</strong></td>
+            <td>会計入力 > 仕訳読込</td>
+            <td>設定シートB7の関与先コードが必須です。科目コードマスタの設定も必要</td>
+          </tr>
+          <tr>
+            <td><strong>JDL IBEX会計</strong></td>
+            <td>ファイル > 取込 > 仕訳データ</td>
+            <td>科目コードマスタの設定が必要。課区コードはJDLの設定により異なる場合があります</td>
+          </tr>
+          <tr>
+            <td><strong>ミロク（MJS）</strong></td>
+            <td>ファイル > 取込 > 仕訳データ</td>
+            <td>科目コードマスタの設定が必要</td>
+          </tr>
+        </table>
+
+        <h3>過去データの再出力（全体シートから期間指定）</h3>
+        <p>「全体」シートには確定済みのすべてのデータが蓄積されています。過去の特定期間のデータを会計ソフトに入れ直したい場合は、全体シートのデータを直接フィルタリングしてCSV出力することができます。</p>
+        <div class="step-box">
+          <ol>
+            <li>「全体」シートを開きます。</li>
+            <li>Googleスプレッドシートのフィルタ機能（ビュー > フィルタを作成）を使い、A列（日付）で期間を絞り込みます。</li>
+            <li>「ファイル」→「ダウンロード」→「カンマ区切り形式（.csv）」でダウンロードします。</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ─── 6. 対応会計ソフト ─── -->
+      <section class="m-section" id="sec6">
+        <h2><span class="sec-num">6</span>対応会計ソフト一覧</h2>
+        <p>顧問先ごとに1種類の会計ソフトを設定します。選択した会計ソフト向けの形式で転記シートが作成されます。</p>
+        <div class="software-grid">
+          <div class="software-card">
+            <div class="name">freee会計</div>
+            <div class="sheet">取引インポート（21列）</div>
+          </div>
+          <div class="software-card">
+            <div class="name">マネーフォワード</div>
+            <div class="sheet">仕訳インポート（25列）</div>
+          </div>
+          <div class="software-card">
+            <div class="name">弥生会計</div>
+            <div class="sheet">仕訳日記帳（25列）</div>
+          </div>
+          <div class="software-card">
+            <div class="name">TKC FX4クラウド</div>
+            <div class="sheet">仕訳読込CSV（28列）</div>
+          </div>
+          <div class="software-card">
+            <div class="name">JDL IBEX会計</div>
+            <div class="sheet">仕訳インポート（11列）</div>
+          </div>
+          <div class="software-card">
+            <div class="name">ミロク（MJS）</div>
+            <div class="sheet">仕訳インポート（13列）</div>
+          </div>
+        </div>
+        <div class="note-box">
+          <strong>インボイス（適格区分）の出力ルール（マネーフォワードの場合）：</strong>
+          <table class="m-table" style="margin-top:10px">
+            <tr><th>適格区分</th><th>MF出力値</th><th>仕訳メモへの追記</th></tr>
+            <tr><td>✅ 適格</td><td>適格</td><td>なし</td></tr>
+            <tr><td>❌ 非適格</td><td>80%控除 ※</td><td>なし</td></tr>
+            <tr><td>？ 不明</td><td>80%控除 ※</td><td>「インボイス要確認」</td></tr>
+          </table>
+          <span style="font-size:.8rem;color:var(--text-muted)">※ 2026年10月以降は50%控除に自動切替します。</span>
+        </div>
+      </section>
+
+      <!-- ─── 7. よくある質問 ─── -->
+      <section class="m-section" id="sec7">
+        <h2><span class="sec-num">7</span>よくある質問</h2>
+
+        <div class="faq-item">
+          <div class="faq-q">「経費記帳」メニューが表示されません</div>
+          <p class="faq-a">スプレッドシートを再読み込み（F5キーまたはブラウザの更新ボタン）してください。顧問先シートを初めて開いた場合は「初期設定（最初の1回のみ）」を実行する必要があります。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">チェックボックスをオンにしても何も起きません</div>
+          <p class="faq-a">「初期設定（最初の1回のみ）」が完了していない可能性があります。メニュー「経費記帳 > 初期設定（最初の1回のみ）」を実行してください。なお、チェックボックスを操作するアカウントは初期設定を実行したアカウントと同じでなければなりません。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">「ライセンスエラー」が表示されます</div>
+          <p class="faq-a">購入時に登録したGoogleアカウントと異なるアカウントでログインしている可能性があります。正しいアカウントでログインしてから再度「初期設定」を実行してください。それでも解決しない場合は OFFICE REIS にお問い合わせください。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">AIの読み取り結果が間違っています</div>
+          <p class="faq-a">②の重複チェックステップで作業シートのデータを直接修正してください。確定（③）前であればいつでも修正できます。画質が低い場合は、より鮮明な画像で再スキャンして再度①から処理してください。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">処理が「残り○件 → 約1.5分後に自動で続行します」で止まっています</div>
+          <p class="faq-a">そのままお待ちください。約1〜2分後に自動的に続きから処理が再開されます。ブラウザを閉じても構いません。しばらくしてからスプレッドシートを開き直すと、処理が完了しているはずです。完了していない場合は①チェックボックスをもう一度オンにしてください。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">1枚のレシートに10%と8%の商品が混在しています</div>
+          <p class="faq-a">AIが自動的に税率ごとに2行に分けて記録します。それぞれの税率の小計が記録されるため、会計ソフトへのインポートもそのまま行えます。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">適格区分が「？不明」になります</div>
+          <p class="faq-a">主な原因は2つです。①国税庁 API IDが設定シートB6に設定されていない。②レシートにT番号が印字されていない（T番号なしの領収書は適格請求書ではないため「❌非適格」に手修正してください）。国税庁 API IDの取得・設定については OFFICE REIS にご相談ください。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">新しい顧問先を追加するにはどうすればいいですか</div>
+          <p class="faq-a">顧問先管理シートの「クライアント管理」シートに顧問先名を追加してA4のチェックボックスを押すと、フォルダと顧問先シートが自動生成されます。</p>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">Gemini APIの利用料金はかかりますか？</div>
+          <p class="faq-a">少量であれば無料枠で賄えますが、会計事務所での日常的な利用では超える可能性が高いだけでなく、途中で止まるなど、作業効率が下がります。ストレスなく作業するため、クレジットカードを登録した有料プランをご利用ください。月500枚程度の処理で400円程度（Gemini 2.5 Flashの場合）の目安です。利用した分だけの従量課金でＡＩ使用料の月額固定費はかかりません。</p>
+          <div class="warn-box" style="margin-top:10px">
+            <strong>APIキーの取り扱いにご注意ください：</strong><br>
+            APIキーは他人に知られないようにしてください。第三者に悪用されると身に覚えのない高額請求が発生する恐れがあります。設定シートのセル値をスクリーンショットで共有することは避けてください。
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">「Gemini APIエラー: Resource has been exhausted」と表示されました</div>
+          <p class="faq-a">Gemini APIの無料枠を超えています。Google Cloud コンソール（console.cloud.google.com）でクレジットカードを登録して有料プランに移行してください。</p>
+          <div class="step-box" style="margin-top:10px">
+            <ol>
+              <li>console.cloud.google.com にアクセスしてGoogleアカウントでログイン</li>
+              <li>左上のメニュー →「お支払い」をクリック</li>
+              <li>「お支払いアカウントを作成」→ 必要事項を入力して登録</li>
+              <li>登録後、再度レシートの読み取りをお試しください</li>
+            </ol>
+          </div>
+          <div class="note-box" style="margin-top:10px">
+            <strong>支出上限・予算アラートの設定をおすすめします：</strong><br>
+            AI Studio の設定から月額支出上限（金額）を設定でき、上限到達で API が自動停止します。予算アラートと組み合わせることで過大利用を確実に防げます。<br>
+            → <a href="budget-guide.html" style="color:var(--navy);font-weight:700;">予算上限・アラート設定ガイド（詳細手順）</a>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">TKCへの取り込みでエラーになります</div>
+          <p class="faq-a">以下を確認してください。① 設定シートB7に関与先コードが設定されているか。② 科目コードマスタの「現金」行に貸方科目コードが設定されているか。③ 科目コードマスタのA列（勘定科目名）がAIの出力と完全一致しているか（スペースの有無も含む）。</p>
+        </div>
+      </section>
+
+      <!-- ─── 8. お問い合わせ ─── -->
+      <section class="m-section" id="sec8">
+        <h2><span class="sec-num">8</span>お問い合わせ</h2>
+        <p>ご不明な点やお困りのことがありましたら、お気軽にご連絡ください。</p>
+        <div class="step-box">
+          <p><strong>OFFICE REIS</strong><br>
+          メール：support@officereis.com<br>
+          受付時間：平日 9:00〜18:00</p>
+        </div>
+        <div class="note-box">
+          お問い合わせの際は、<strong>①ご利用の会計ソフト名 ②エラーメッセージ（あれば）③作業シートのステータス欄の表示</strong>をお知らせいただくとスムーズに対応できます。
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="m-footer">
+    &copy; 2026 OFFICE REIS ― Scan&amp;Sheet AI 操作マニュアル
+  </footer>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     JavaScript
+════════════════════════════════════════════════════ -->
+<script>
+  const isSetup = new URLSearchParams(location.search).get('setup') === 'true';
+  if (isSetup) {
+    document.getElementById('setup-screen').style.display = 'flex';
+    document.getElementById('manual').style.display       = 'none';
+  }
+</script>
+</body>
+</html>

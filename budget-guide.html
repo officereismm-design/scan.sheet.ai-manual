@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>予算上限・アラート設定ガイド | Scan&amp;Sheet AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:       #1B2A5E;
+      --navy-dark:  #0F1A3E;
+      --navy-light: #E8EBF4;
+      --navy-soft:  #F2F4FA;
+      --gold:       #C9A84C;
+      --gold-dark:  #A8872E;
+      --gold-light: #F0E5C4;
+      --gold-soft:  #FAF6EE;
+      --text:       #1f2937;
+      --text-muted: #6b7280;
+      --white:      #ffffff;
+      --radius:     12px;
+      --shadow-lg:  0 8px 48px rgba(27,42,94,.16);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--text);
+      line-height: 1.8;
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(201,168,76,.07) 0%, transparent 40%),
+        linear-gradient(160deg, #0d1b3e 0%, #1B2A5E 45%, #152245 100%);
+      min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .g-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,18,45,.85);
+      backdrop-filter: blur(16px);
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+      box-shadow: 0 1px 0 rgba(201,168,76,.4), 0 4px 20px rgba(0,0,0,.3);
+      border-bottom: 1px solid rgba(201,168,76,.35);
+    }
+    .g-header img { height: 42px; width: auto; }
+    .g-header-title { color: var(--gold-light); font-size: .82rem; font-weight: 400; letter-spacing: .08em; }
+    .g-header-back {
+      color: var(--gold-light); font-size: .82rem; text-decoration: none;
+      display: flex; align-items: center; gap: 6px;
+      transition: color .15s;
+    }
+    .g-header-back:hover { color: var(--gold); }
+
+    .g-layout {
+      position: relative; z-index: 1;
+      max-width: 800px; margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+
+    .g-section {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      padding: 40px 48px;
+      margin-bottom: 24px;
+      border-top: 3px solid var(--gold);
+    }
+
+    .g-section h2 {
+      font-size: 1.2rem; font-weight: 700; color: var(--navy);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--navy-light);
+    }
+    .g-section h2 .icon { font-size: 1.4rem; flex-shrink: 0; }
+    .g-section h3 {
+      font-size: .95rem; font-weight: 700; color: var(--navy);
+      margin: 28px 0 12px;
+      padding: 8px 14px;
+      background: linear-gradient(90deg, var(--navy-soft) 0%, transparent 100%);
+      border-left: 3px solid var(--gold);
+      border-radius: 0 6px 6px 0;
+    }
+    .g-section p { font-size: .9rem; margin-bottom: 12px; line-height: 1.95; color: #374151; }
+
+    .step-box {
+      background: linear-gradient(135deg, var(--navy-soft) 0%, #eef0f8 100%);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin: 16px 0;
+      border: 1px solid var(--navy-light);
+    }
+    .step-box ol { list-style: none; padding: 0; counter-reset: step; }
+    .step-box li {
+      font-size: .9rem; margin-bottom: 16px; line-height: 1.85;
+      display: flex; align-items: flex-start; gap: 12px;
+      counter-increment: step;
+    }
+    .step-box li:last-child { margin-bottom: 0; }
+    .step-box li::before {
+      content: counter(step);
+      background: var(--navy);
+      color: var(--white);
+      border-radius: 50%;
+      min-width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-box li strong { color: var(--navy); }
+    .step-box .sub-note {
+      font-size: .82rem; color: var(--text-muted);
+      margin-top: 4px; display: block;
+    }
+
+    .note-box {
+      background: var(--gold-soft);
+      border: 1px solid var(--gold-light);
+      border-left: 4px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: .86rem;
+      line-height: 1.85;
+    }
+    .note-box strong { color: var(--navy); }
+
+    .warn-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: .86rem;
+      line-height: 1.85;
+    }
+    .warn-box strong { color: #92400e; }
+
+    .ok-box {
+      background: #f0faf0;
+      border: 1px solid #b7e0b7;
+      border-left: 4px solid #34a853;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: .86rem;
+      line-height: 1.85;
+    }
+    .ok-box strong { color: #1a5c1a; }
+
+    .url-box {
+      display: inline-block;
+      background: var(--navy-soft);
+      border: 1px solid var(--navy-light);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-family: monospace;
+      font-size: .88rem;
+      color: var(--navy);
+      margin: 6px 0;
+      word-break: break-all;
+    }
+
+    .g-footer {
+      position: relative; z-index: 1;
+      color: rgba(201,168,76,.7);
+      text-align: center;
+      padding: 24px;
+      font-size: .78rem;
+      letter-spacing: .06em;
+    }
+
+    @media (max-width: 640px) {
+      .g-section { padding: 28px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="g-header">
+  <img src="images/logo.png" alt="OFFICE REIS" onerror="this.style.display='none'" />
+  <span class="g-header-title">予算上限・アラート設定ガイド</span>
+  <a href="api-guide.html" class="g-header-back">← APIキーガイドに戻る</a>
+</header>
+
+<div class="g-layout">
+
+  <!-- ─── 月額支出上限 ─── -->
+  <section class="g-section">
+    <h2><span class="icon">💴</span>① 月額支出上限の設定（金額で制限）</h2>
+    <p>AI Studio の設定から、プロジェクトごとに月の支出上限を金額で設定できます。上限に達すると API が自動的に停止します。最初にこの設定を行うことをおすすめします。</p>
+
+    <div class="note-box">
+      <strong>予算アラートとの違い：</strong>予算アラートはメール通知のみですが、月額支出上限は上限到達で API が実際に停止します。過大利用を確実に防ぎたい場合はこちらの設定をおすすめします。
+    </div>
+
+    <h3>設定手順</h3>
+    <div class="step-box">
+      <ol>
+        <li>
+          <div>
+            <strong>AI Studio の支出管理ページを開く</strong><br>
+            <span class="url-box">aistudio.google.com/spend</span><br>
+            <span class="sub-note">APIキー取得時に使用したGoogleアカウントでログインしてください。</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>「Monthly spend cap」の「Edit spend cap」をクリック</strong>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>上限金額を入力して保存</strong><br>
+            月500枚程度の処理で400円（約3ドル）程度が目安です。余裕を持って1,000〜2,000円程度に設定することをおすすめします。<br>
+            <span class="sub-note">※ 金額はドル（USD）で入力します。1ドル＝約150円で換算してください。</span>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="warn-box">
+      <strong>注意：上限超過のタイミングにずれが生じる場合があります</strong><br>
+      バッチ処理など大量のリクエストが集中した場合、約10分程度の請求遅延により上限をわずかに超過することがあります。安全のため、実際の使用見込み額より少し高めに設定してください。
+    </div>
+  </section>
+
+  <!-- ─── 予算アラート ─── -->
+  <section class="g-section">
+    <h2><span class="icon">🔔</span>② 予算アラートの設定（通知）</h2>
+    <p>Google Cloud の予算アラートを設定すると、Gemini API の利用料金が設定した金額に達した際にメールで通知が届きます。月額支出上限と組み合わせることで二重の安全策になります。</p>
+
+    <div class="note-box">
+      <strong>設定時間の目安：約5分</strong>　／　<strong>費用：無料</strong><br>
+      アラートはあくまで通知です。設定金額を超えても自動的にAPIが停止するわけではありません。
+    </div>
+
+    <h3>手順</h3>
+    <div class="step-box">
+      <ol>
+        <li>
+          <div>
+            <strong>Google Cloud コンソールを開く</strong><br>
+            <span class="url-box">console.cloud.google.com</span><br>
+            <span class="sub-note">APIキー取得時に使用したGoogleアカウントでログインしてください。</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>左上のメニュー（≡）→「お支払い」をクリック</strong><br>
+            <span class="sub-note">メニューが見つからない場合は画面左上の三本線アイコンをクリックしてください。</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>左側のメニューから「予算とアラート」をクリック</strong>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>「予算を作成」をクリック</strong>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>予算の名前と金額を入力する</strong><br>
+            名前：例「Gemini API 月次予算」<br>
+            予算の種類：「指定金額」を選択<br>
+            金額：例「1000」（円）<br>
+            <span class="sub-note">月500枚程度の処理では400円程度が目安です。余裕を持って1,000円程度に設定しておくことをおすすめします。</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>アラートのしきい値を設定する</strong><br>
+            「しきい値のルールを追加」で通知タイミングを設定します。<br>
+            例：50%（500円）・90%（900円）・100%（1,000円）の3段階が目安です。
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>通知先メールアドレスを確認して「完了」をクリック</strong><br>
+            <span class="sub-note">デフォルトでは請求アカウントの管理者メールアドレスに通知が届きます。変更が必要な場合は「メール受信者を管理」から設定してください。</span>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="ok-box">
+      <strong>設定完了後の動作：</strong><br>
+      設定したしきい値（例：50%・90%・100%）に達するたびにメールが届きます。100%を超えても API は停止しませんが、通知をもとに利用状況を確認してください。
+    </div>
+
+  </section>
+
+  <!-- ─── クォータ（利用上限）設定 ─── -->
+  <section class="g-section">
+    <h2><span class="icon">🚦</span>③ 利用上限（クォータ）の設定（枚数で制限）</h2>
+    <p>予算アラートは通知のみで自動停止はしません。1日あたりのリクエスト数に上限を設定することで、使いすぎを物理的に防ぐことができます。</p>
+
+    <div class="note-box">
+      <strong>クォータとは：</strong>APIへのリクエスト回数の上限設定です。上限に達すると処理がエラーになり、それ以上の課金が発生しなくなります。翌日0時（UTC）にリセットされます。
+    </div>
+
+    <h3>設定手順</h3>
+    <div class="step-box">
+      <ol>
+        <li>
+          <div>
+            <strong>Google Cloud コンソールを開く</strong><br>
+            <span class="url-box">console.cloud.google.com</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>左上のメニュー（≡）→「APIとサービス」→「有効なAPIとサービス」をクリック</strong>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>一覧から「Gemini API」をクリック</strong><br>
+            <span class="sub-note">見つからない場合は検索ボックスで「Gemini」と入力してください。</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>上部タブの「割り当てと上限」をクリック</strong>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>制限したい項目の右端の鉛筆アイコン（編集）をクリック</strong><br>
+            例：「Requests per day per project」（1日あたりのリクエスト数）を選択します。<br>
+            <span class="sub-note">月500枚の処理で1日あたり約25〜50リクエスト程度が目安です。余裕を持って500〜1,000程度に設定しておくことをおすすめします。</span>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>上限値を入力して「保存」をクリック</strong><br>
+            <span class="sub-note">設定が反映されるまで数分かかる場合があります。</span>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="ok-box">
+      <strong>予算アラートとの組み合わせがおすすめ：</strong><br>
+      クォータで物理的な上限を設け、予算アラートで金額の監視をする2段構えの設定が安心です。
+    </div>
+
+    <div class="warn-box">
+      <strong>上限に達した場合の動作：</strong><br>
+      処理中にクォータ上限に達すると「Resource has been exhausted」エラーが表示されます。翌日に自動でリセットされるまで AI 読み取りができなくなりますのでご注意ください。上限値は余裕を持って設定してください。
+    </div>
+
+  </section>
+
+</div>
+
+<footer class="g-footer">© OFFICE REIS — Scan&amp;Sheet AI</footer>
+
+</body>
+</html>

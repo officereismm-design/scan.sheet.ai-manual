@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>パスワード変更ツール ― Scan&amp;Sheet AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #F2F4FA;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(27,42,94,.12);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 520px;
+    }
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1B2A5E;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: .85rem;
+      color: #6b7280;
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+    .gold-line {
+      background: linear-gradient(90deg, transparent, #C9A84C, transparent);
+      height: 1px;
+      margin-bottom: 32px;
+    }
+
+    /* ステップ */
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .step-num {
+      background: #1B2A5E;
+      color: #fff;
+      border-radius: 50%;
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-label {
+      font-size: .85rem;
+      font-weight: 700;
+      color: #1B2A5E;
+      margin-bottom: 8px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid #E8EBF4;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: #1B2A5E; }
+
+    .btn-gold {
+      padding: 11px 24px;
+      background: #C9A84C;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity .2s;
+      margin-top: 10px;
+    }
+    .btn-gold:hover { opacity: .85; }
+    .btn-navy {
+      padding: 11px 24px;
+      background: #1B2A5E;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity .2s;
+      margin-top: 10px;
+    }
+    .btn-navy:hover { opacity: .85; }
+
+    .hash-box {
+      background: #F2F4FA;
+      border: 1.5px solid #E8EBF4;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: .78rem;
+      font-family: monospace;
+      word-break: break-all;
+      color: #1B2A5E;
+      min-height: 48px;
+      margin-top: 10px;
+    }
+
+    .instruction-box {
+      background: #FAF6EE;
+      border: 1px solid #F0E5C4;
+      border-left: 4px solid #C9A84C;
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-top: 10px;
+      font-size: .83rem;
+      line-height: 1.8;
+      color: #374151;
+    }
+    .instruction-box code {
+      background: #E8EBF4;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: .8rem;
+    }
+    .copied-msg {
+      font-size: .8rem;
+      color: #16a34a;
+      margin-top: 6px;
+      min-height: 20px;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid #E8EBF4;
+      margin: 28px 0;
+    }
+    .footer-note {
+      font-size: .75rem;
+      color: #9ca3af;
+      text-align: center;
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>マニュアルのパスワード変更ツール</h1>
+  <p class="subtitle">
+    新しいパスワードを入力してハッシュを生成し、<br>
+    <code style="background:#E8EBF4;padding:1px 6px;border-radius:4px;font-size:.8rem">index.html</code> に貼り付けてください。
+  </p>
+  <div class="gold-line"></div>
+
+  <!-- STEP 1 -->
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-label">新しいパスワードを入力</div>
+      <input type="text" id="pw-input" placeholder="例: ScanSheet2026" autocomplete="off" />
+      <button class="btn-gold" id="gen-btn">ハッシュを生成</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-label">生成されたハッシュをコピー</div>
+      <div class="hash-box" id="hash-result">（ステップ1を実行すると表示されます）</div>
+      <button class="btn-navy" id="copy-btn">コピー</button>
+      <div class="copied-msg" id="copied-msg"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-label">index.html に貼り付け</div>
+      <div class="instruction-box">
+        <code>index.html</code> をテキストエディタ（メモ帳等）で開き、<br>
+        以下の行を見つけてハッシュ値を書き換えてください：<br><br>
+        <code>const PASSWORD_HASH = '（ここを書き換える）';</code><br><br>
+        書き換え後にファイルを保存すれば完了です。
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <div style="font-size:.83rem;color:#1B2A5E;font-weight:700;margin-bottom:8px;">現在のパスワードを確認する</div>
+  <div style="font-size:.82rem;color:#6b7280;margin-bottom:10px;">パスワードを忘れた場合、既知のパスワードでここで照合できます。</div>
+  <input type="password" id="verify-input" placeholder="パスワードを入力して照合" />
+  <button class="btn-gold" id="verify-btn" style="margin-left:0">照合する</button>
+  <div id="verify-result" style="margin-top:8px;font-size:.85rem;min-height:20px;"></div>
+
+  <p class="footer-note">このファイルは開発者専用です。顧客には共有しないでください。</p>
+</div>
+
+<script>
+  // ★ index.html と同じ PASSWORD_HASH を設定してください
+  const PASSWORD_HASH = '【ここを置き換える】';
+
+  async function sha256(str) {
+    const buf  = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // ハッシュ生成
+  document.getElementById('gen-btn').addEventListener('click', async () => {
+    const pw = document.getElementById('pw-input').value.trim();
+    if (!pw) { alert('パスワードを入力してください。'); return; }
+    const hash = await sha256(pw);
+    document.getElementById('hash-result').textContent = hash;
+  });
+
+  // コピー
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    const hash = document.getElementById('hash-result').textContent;
+    if (hash.includes('ステップ')) { alert('先にハッシュを生成してください。'); return; }
+    navigator.clipboard.writeText(hash).then(() => {
+      const msg = document.getElementById('copied-msg');
+      msg.textContent = 'コピーしました！';
+      setTimeout(() => { msg.textContent = ''; }, 2500);
+    });
+  });
+
+  // 照合
+  document.getElementById('verify-btn').addEventListener('click', async () => {
+    const pw   = document.getElementById('verify-input').value;
+    const hash = await sha256(pw);
+    const res  = document.getElementById('verify-result');
+    if (hash === PASSWORD_HASH) {
+      res.style.color = '#16a34a';
+      res.textContent = '一致しました。このパスワードが現在設定されています。';
+    } else {
+      res.style.color = '#dc2626';
+      res.textContent = '一致しません。';
+    }
+  });
+</script>
+</body>
+</html>
